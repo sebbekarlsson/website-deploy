@@ -1,0 +1,40 @@
+ 
+- hosts: website
+  become: yes
+  tasks:
+  - name: "Update apt mirrors"
+    shell: "apt-get update"
+
+  - name: "install nginx"
+    apt:
+      name: ['nginx']
+      state: latest
+
+  - name: "create www directory that nginx will use later"
+    file:
+      path: /var/www/{{ domain }}
+      state: directory
+      mode: '0775'
+      owner: "{{ web_user }}"
+      group: "{{ web_group }}"
+
+  - name: "delete default nginx site"
+    file:
+      path: /etc/nginx/sites-enabled/default
+      state: absent
+    notify: restart nginx
+
+  - name: "copy nginx config"
+    template:
+      src: website.nginx
+      dest: /etc/nginx/sites-enabled/{{ domain }}
+      owner: root
+      group: root
+      mode: '0644'
+    notify: restart nginx
+
+  handlers:
+    - name: "restart nginx"
+      service:
+        name: nginx
+        state: restarted

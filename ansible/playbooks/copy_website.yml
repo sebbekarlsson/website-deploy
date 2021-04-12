@@ -1,0 +1,7 @@
+- hosts: website
+  become: yes
+  tasks:
+  - name: "Copy over website directory to server"
+    copy:
+      src: ../../website/
+      dest: /var/www/{{ domain }}
